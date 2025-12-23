@@ -1,0 +1,6 @@
+@MonResto_HostAddress = http://localhost:5230
+
+GET {{MonResto_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
