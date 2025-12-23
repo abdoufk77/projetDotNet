@@ -1,4 +1,4 @@
-Projet ASP.NET Core MVC - [Nom de ton application]
+Projet ASP.NET Core MVC - Restauration 
  Présentation du Projet
 Ce projet a été réalisé dans le cadre de l'examen de Développement .NET. Il s'agit d'une application web robuste basée sur le pattern MVC (Model-View-Controller), mettant l'accent sur la séparation des préoccupations et la maintenabilité du code.
 
