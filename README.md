@@ -1,4 +1,4 @@
-Projet ASP.NET Core MVC - Restauration 
+Projet ASP.NET Core - Restauration 
  Présentation du Projet
 Ce projet a été réalisé dans le cadre de l'examen de Développement .NET. Il s'agit d'une application web robuste basée sur le pattern MVC (Model-View-Controller), mettant l'accent sur la séparation des préoccupations et la maintenabilité du code.
 
@@ -7,20 +7,12 @@ L'application repose sur les technologies suivantes :
 
 Framework : .NET Core 8.0 (ou la version que tu utilises)
 
-Pattern : Model-View-Controller (MVC)
-
 ORM : Entity Framework Core (si utilisé pour la BDD)
-
-Interface : Razor Views, HTML5, CSS3 (Bootstrap)
 
  Fonctionnalités Clés
 Gestion des Modèles : Implémentation de classes métiers avec validation de données via Data Annotations.
 
 Contrôleurs : Logique métier centralisée gérant les requêtes HTTP et la navigation.
-
-Vues Dynamiques : Utilisation de Razor pour un rendu serveur fluide et réactif.
-
-Persistance des données : (Ajoute ici si tu as une base de données SQL Server ou SQLite).
 
  Installation et Exécution
 Pour lancer le projet en local, suivez ces étapes :
