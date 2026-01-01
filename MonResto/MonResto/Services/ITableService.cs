@@ -5,13 +5,13 @@ namespace MonResto.Services
     public interface ITableService
     {
         Task<List<Table>> GetAllTablesAsync();
-        Task<Table> GetTableByIdAsync(int id);
+        Task<Table> GetTableByIdAsync(string id);
         Task<Table> GetTableByQrCodeAsync(string qrCodeUrl);
         Task<Table> CreateTableAsync(Table table);
         Task<Table> UpdateTableAsync(Table table);
-        Task<bool> DeleteTableAsync(int id);
-        Task<Table> UpdateStatutAsync(int id, string statut);
-        Task<string> GenerateQrCodeUrlAsync(int tableId);
-        Task<byte[]> GenerateQrCodeImageAsync(int tableId);
+        Task<bool> DeleteTableAsync(string id);
+        Task<Table> UpdateStatutAsync(string id, string statut);
+        Task<string> GenerateQrCodeUrlAsync(string tableId);
+        Task<byte[]> GenerateQrCodeImageAsync(string tableId);
     }
 }

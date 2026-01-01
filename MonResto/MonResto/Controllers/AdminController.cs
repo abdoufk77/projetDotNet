@@ -1,4 +1,4 @@
-ï»¿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MonResto.Models;
 using MonResto.Services;
@@ -34,12 +34,12 @@ namespace MonResto.Controllers
         }
 
         [HttpGet("serveurs/{id}")]
-        public async Task<IActionResult> GetServeur(int id)
+        public async Task<IActionResult> GetServeur(string id)
         {
             var serveur = await _authService.GetUserByIdAsync(id);
             if (serveur == null || serveur.Role != UserRole.Serveur)
             {
-                return NotFound(new { message = "Serveur non trouvÃ©" });
+                return NotFound(new { message = "Serveur non trouvé" });
             }
 
             return Ok(new
@@ -79,12 +79,12 @@ namespace MonResto.Controllers
         }
 
         [HttpPut("serveurs/{id}")]
-        public async Task<IActionResult> UpdateServeur(int id, [FromBody] UpdateUserRequest request)
+        public async Task<IActionResult> UpdateServeur(string id, [FromBody] UpdateUserRequest request)
         {
             var existingServeur = await _authService.GetUserByIdAsync(id);
             if (existingServeur == null || existingServeur.Role != UserRole.Serveur)
             {
-                return NotFound(new { message = "Serveur non trouvÃ©" });
+                return NotFound(new { message = "Serveur non trouvé" });
             }
 
             var serveur = new User
@@ -108,18 +108,18 @@ namespace MonResto.Controllers
         }
 
         [HttpDelete("serveurs/{id}")]
-        public async Task<IActionResult> DeleteServeur(int id)
+        public async Task<IActionResult> DeleteServeur(string id)
         {
             var serveur = await _authService.GetUserByIdAsync(id);
             if (serveur == null || serveur.Role != UserRole.Serveur)
             {
-                return NotFound(new { message = "Serveur non trouvÃ©" });
+                return NotFound(new { message = "Serveur non trouvé" });
             }
 
             var deleted = await _authService.DeleteUserAsync(id);
             if (deleted)
             {
-                return Ok(new { message = "Serveur supprimÃ© avec succÃ¨s" });
+                return Ok(new { message = "Serveur supprimé avec succès" });
             }
 
             return BadRequest(new { message = "Erreur lors de la suppression" });
@@ -140,12 +140,12 @@ namespace MonResto.Controllers
         }
 
         [HttpGet("cuisiniers/{id}")]
-        public async Task<IActionResult> GetCuisinier(int id)
+        public async Task<IActionResult> GetCuisinier(string id)
         {
             var cuisinier = await _authService.GetUserByIdAsync(id);
             if (cuisinier == null || cuisinier.Role != UserRole.Cuisinier)
             {
-                return NotFound(new { message = "Cuisinier non trouvÃ©" });
+                return NotFound(new { message = "Cuisinier non trouvé" });
             }
 
             return Ok(new
@@ -185,12 +185,12 @@ namespace MonResto.Controllers
         }
 
         [HttpPut("cuisiniers/{id}")]
-        public async Task<IActionResult> UpdateCuisinier(int id, [FromBody] UpdateUserRequest request)
+        public async Task<IActionResult> UpdateCuisinier(string id, [FromBody] UpdateUserRequest request)
         {
             var existingCuisinier = await _authService.GetUserByIdAsync(id);
             if (existingCuisinier == null || existingCuisinier.Role != UserRole.Cuisinier)
             {
-                return NotFound(new { message = "Cuisinier non trouvÃ©" });
+                return NotFound(new { message = "Cuisinier non trouvé" });
             }
 
             var cuisinier = new User
@@ -214,18 +214,18 @@ namespace MonResto.Controllers
         }
 
         [HttpDelete("cuisiniers/{id}")]
-        public async Task<IActionResult> DeleteCuisinier(int id)
+        public async Task<IActionResult> DeleteCuisinier(string id)
         {
             var cuisinier = await _authService.GetUserByIdAsync(id);
             if (cuisinier == null || cuisinier.Role != UserRole.Cuisinier)
             {
-                return NotFound(new { message = "Cuisinier non trouvÃ©" });
+                return NotFound(new { message = "Cuisinier non trouvé" });
             }
 
             var deleted = await _authService.DeleteUserAsync(id);
             if (deleted)
             {
-                return Ok(new { message = "Cuisinier supprimÃ© avec succÃ¨s" });
+                return Ok(new { message = "Cuisinier supprimé avec succès" });
             }
 
             return BadRequest(new { message = "Erreur lors de la suppression" });

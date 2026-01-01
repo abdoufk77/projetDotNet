@@ -72,6 +72,10 @@ export default function CuisinierDashboard() {
     return () => clearInterval(interval);
   }, []);
 
+  // Enrichir les commandes avec numeroTable quand les tables sont chargées
+
+
+
   const loadData = async (token) => {
     await Promise.all([
       loadMenuItems(token),
@@ -101,6 +105,8 @@ export default function CuisinierDashboard() {
       console.error("Erreur chargement catégories", error);
     }
   };
+
+
 
   const loadCommandes = async (token) => {
     try {
@@ -390,8 +396,8 @@ export default function CuisinierDashboard() {
             <button
               onClick={() => setActiveTab("commandes")}
               className={`flex-1 px-6 py-4 font-semibold transition-colors ${activeTab === "commandes"
-                  ? "text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-600 hover:text-gray-800"
+                ? "text-blue-600 border-b-2 border-blue-600"
+                : "text-gray-600 hover:text-gray-800"
                 }`}
             >
               📋 Commandes (
@@ -400,8 +406,8 @@ export default function CuisinierDashboard() {
             <button
               onClick={() => setActiveTab("menu")}
               className={`flex-1 px-6 py-4 font-semibold transition-colors ${activeTab === "menu"
-                  ? "text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-600 hover:text-gray-800"
+                ? "text-blue-600 border-b-2 border-blue-600"
+                : "text-gray-600 hover:text-gray-800"
                 }`}
             >
               🍽️ Gestion du Menu
@@ -460,8 +466,8 @@ export default function CuisinierDashboard() {
               <button
                 onClick={() => setSelectedCommandeFilter("all")}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedCommandeFilter === "all"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                   }`}
               >
                 Toutes
@@ -469,8 +475,8 @@ export default function CuisinierDashboard() {
               <button
                 onClick={() => setSelectedCommandeFilter("en-attente")}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedCommandeFilter === "en-attente"
-                    ? "bg-yellow-600 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  ? "bg-yellow-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                   }`}
               >
                 En Attente
@@ -478,8 +484,8 @@ export default function CuisinierDashboard() {
               <button
                 onClick={() => setSelectedCommandeFilter("en-preparation")}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedCommandeFilter === "en-preparation"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                   }`}
               >
                 En Préparation
@@ -526,7 +532,7 @@ export default function CuisinierDashboard() {
                             </span>
                           </div>
                           <p className="text-sm text-gray-600">
-                            Table {commande.tableId} •{" "}
+                            Table {commande.numeroTable} •{" "}
                             {new Date(commande.dateCommande).toLocaleTimeString(
                               "fr-FR",
                               { hour: "2-digit", minute: "2-digit" }
@@ -669,8 +675,8 @@ export default function CuisinierDashboard() {
                     <button
                       onClick={() => setSelectedCategorie("Tous")}
                       className={`px-3 py-1 rounded-lg text-sm ${selectedCategorie === "Tous"
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                         }`}
                     >
                       Tous
@@ -680,8 +686,8 @@ export default function CuisinierDashboard() {
                         key={cat}
                         onClick={() => setSelectedCategorie(cat)}
                         className={`px-3 py-1 rounded-lg text-sm ${selectedCategorie === cat
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                           }`}
                       >
                         {cat}
@@ -712,8 +718,8 @@ export default function CuisinierDashboard() {
                       <div
                         key={item.id}
                         className={`border rounded-lg p-4 hover:shadow-md transition-shadow ${!item.disponible
-                            ? "bg-gray-50 opacity-75"
-                            : "bg-white"
+                          ? "bg-gray-50 opacity-75"
+                          : "bg-white"
                           }`}
                       >
                         <div className="flex items-start justify-between mb-3">
@@ -733,12 +739,12 @@ export default function CuisinierDashboard() {
                           </div>
                           <span
                             className={`px-2 py-1 text-xs rounded font-medium ${item.categorie === "Entrée"
-                                ? "bg-purple-100 text-purple-700"
-                                : item.categorie === "Plat"
-                                  ? "bg-orange-100 text-orange-700"
-                                  : item.categorie === "Dessert"
-                                    ? "bg-pink-100 text-pink-700"
-                                    : "bg-blue-100 text-blue-700"
+                              ? "bg-purple-100 text-purple-700"
+                              : item.categorie === "Plat"
+                                ? "bg-orange-100 text-orange-700"
+                                : item.categorie === "Dessert"
+                                  ? "bg-pink-100 text-pink-700"
+                                  : "bg-blue-100 text-blue-700"
                               }`}
                           >
                             {item.categorie}
@@ -750,8 +756,8 @@ export default function CuisinierDashboard() {
                               toggleDisponibilite(item.id, item.disponible)
                             }
                             className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded text-sm ${item.disponible
-                                ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                                : "bg-green-100 text-green-700 hover:bg-green-200"
+                              ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                              : "bg-green-100 text-green-700 hover:bg-green-200"
                               }`}
                           >
                             {item.disponible ? (

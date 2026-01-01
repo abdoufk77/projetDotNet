@@ -1,14 +1,14 @@
 ﻿using MonResto.Models;
 using MonResto.Data;
-using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 
 namespace MonResto.Services
 {
     public class CommandeService : ICommandeService
     {
-        private readonly AppDbContext _context;
+        private readonly MongoDbContext _context;
 
-        public CommandeService(AppDbContext context)
+        public CommandeService(MongoDbContext context)
         {
             _context = context;
         }
@@ -20,7 +20,9 @@ namespace MonResto.Services
 
             foreach (var item in request.Items)
             {
-                var menuItem = await _context.MenuItems.FirstOrDefaultAsync(m => m.Id == item.MenuItemId);
+                var filter = Builders<MenuItem>.Filter.Eq(m => m.Id, item.MenuItemId);
+                var menuItem = await _context.MenuItems.Find(filter).FirstOrDefaultAsync();
+                
                 if (menuItem != null && menuItem.Disponible)
                 {
                     var commandeItem = new CommandeItem
@@ -46,53 +48,49 @@ namespace MonResto.Services
                 Notes = request.Notes
             };
 
-            _context.Commandes.Add(commande);
+            await _context.Commandes.InsertOneAsync(commande);
 
-            var table = await _context.Tables.FirstOrDefaultAsync(t => t.Id == request.TableId);
+            var tableFilter = Builders<Table>.Filter.Eq(t => t.Id, request.TableId);
+            var table = await _context.Tables.Find(tableFilter).FirstOrDefaultAsync();
             if (table != null)
             {
-                table.Statut = TableStatut.Reservee;
+                var update = Builders<Table>.Update.Set(t => t.Statut, TableStatut.Reservee);
+                await _context.Tables.UpdateOneAsync(tableFilter, update);
             }
-
-            await _context.SaveChangesAsync();
 
             return commande;
         }
 
         public async Task<List<Commande>> GetAllCommandesAsync()
         {
-            return await _context.Commandes
-                           .Include(c => c.Items)
-                           .OrderByDescending(c => c.DateCommande)
-                           .ToListAsync();
+            var sort = Builders<Commande>.Sort.Descending(c => c.DateCommande);
+            return await _context.Commandes.Find(FilterDefinition<Commande>.Empty)
+                .Sort(sort)
+                .ToListAsync();
         }
 
-        public async Task<List<Commande>> GetCommandesByTableAsync(int tableId)
+        public async Task<List<Commande>> GetCommandesByTableAsync(string tableId)
         {
-            return await _context.Commandes
-                           .Include(c => c.Items)
-                           .Where(c => c.TableId == tableId)
-                           .OrderByDescending(c => c.DateCommande)
-                           .ToListAsync();
+            var filter = Builders<Commande>.Filter.Eq(c => c.TableId, tableId);
+            var sort = Builders<Commande>.Sort.Descending(c => c.DateCommande);
+            return await _context.Commandes.Find(filter)
+                .Sort(sort)
+                .ToListAsync();
         }
 
-        public async Task<Commande> GetCommandeByIdAsync(int id)
+        public async Task<Commande> GetCommandeByIdAsync(string id)
         {
-            return await _context.Commandes
-                           .Include(c => c.Items)
-                           .FirstOrDefaultAsync(c => c.Id == id);
+            var filter = Builders<Commande>.Filter.Eq(c => c.Id, id);
+            return await _context.Commandes.Find(filter).FirstOrDefaultAsync();
         }
 
-        public async Task<Commande> UpdateStatutAsync(int id, string statut)
+        public async Task<Commande> UpdateStatutAsync(string id, string statut)
         {
-            var commande = await _context.Commandes.FirstOrDefaultAsync(c => c.Id == id);
-            if (commande != null)
-            {
-                commande.Statut = statut;
-                await _context.SaveChangesAsync();
-                return commande;
-            }
-            return null;
+            var filter = Builders<Commande>.Filter.Eq(c => c.Id, id);
+            var update = Builders<Commande>.Update.Set(c => c.Statut, statut);
+            
+            await _context.Commandes.UpdateOneAsync(filter, update);
+            return await GetCommandeByIdAsync(id);
         }
     }
 }

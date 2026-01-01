@@ -1,85 +1,86 @@
 ﻿using MonResto.Models;
 using MonResto.Data;
-using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 
 namespace MonResto.Services
 {
     public class MenuService : IMenuService
     {
-        private readonly AppDbContext _context;
+        private readonly MongoDbContext _context;
 
-        public MenuService(AppDbContext context)
+        public MenuService(MongoDbContext context)
         {
             _context = context;
         }
 
         public async Task<List<MenuItem>> GetAllMenuItemsAsync()
         {
-            return await _context.MenuItems.ToListAsync();
+            return await _context.MenuItems.Find(FilterDefinition<MenuItem>.Empty).ToListAsync();
         }
 
         public async Task<List<MenuItem>> GetAvailableMenuItemsAsync()
         {
-            return await _context.MenuItems.Where(m => m.Disponible).ToListAsync();
+            var filter = Builders<MenuItem>.Filter.Eq(m => m.Disponible, true);
+            return await _context.MenuItems.Find(filter).ToListAsync();
         }
 
         public async Task<List<MenuItem>> GetMenuItemsByCategorieAsync(string categorie)
         {
-            return await _context.MenuItems.Where(m => m.Categorie == categorie && m.Disponible).ToListAsync();
+            var filter = Builders<MenuItem>.Filter.And(
+                Builders<MenuItem>.Filter.Eq(m => m.Categorie, categorie),
+                Builders<MenuItem>.Filter.Eq(m => m.Disponible, true)
+            );
+            return await _context.MenuItems.Find(filter).ToListAsync();
         }
 
-        public async Task<MenuItem> GetMenuItemByIdAsync(int id)
+        public async Task<MenuItem> GetMenuItemByIdAsync(string id)
         {
-            return await _context.MenuItems.FirstOrDefaultAsync(m => m.Id == id);
+            var filter = Builders<MenuItem>.Filter.Eq(m => m.Id, id);
+            return await _context.MenuItems.Find(filter).FirstOrDefaultAsync();
         }
 
         public async Task<MenuItem> CreateMenuItemAsync(MenuItem item)
         {
             item.Disponible = true;
-            _context.MenuItems.Add(item);
-            await _context.SaveChangesAsync();
+            await _context.MenuItems.InsertOneAsync(item);
             return item;
         }
 
         public async Task<MenuItem> UpdateMenuItemAsync(MenuItem item)
         {
-            var existing = await _context.MenuItems.FirstOrDefaultAsync(m => m.Id == item.Id);
+            var filter = Builders<MenuItem>.Filter.Eq(m => m.Id, item.Id);
+            var existing = await _context.MenuItems.Find(filter).FirstOrDefaultAsync();
+            
             if (existing != null)
             {
-                existing.Nom = item.Nom;
-                existing.Description = item.Description;
-                existing.Prix = item.Prix;
-                existing.Categorie = item.Categorie;
-                existing.ImageUrl = item.ImageUrl;
-                existing.Disponible = item.Disponible;
-                await _context.SaveChangesAsync();
-                return existing;
+                var update = Builders<MenuItem>.Update
+                    .Set(m => m.Nom, item.Nom)
+                    .Set(m => m.Description, item.Description)
+                    .Set(m => m.Prix, item.Prix)
+                    .Set(m => m.Categorie, item.Categorie)
+                    .Set(m => m.ImageUrl, item.ImageUrl)
+                    .Set(m => m.Disponible, item.Disponible);
+                
+                await _context.MenuItems.UpdateOneAsync(filter, update);
+                return await GetMenuItemByIdAsync(item.Id);
             }
             return null;
         }
 
-        public async Task<bool> DeleteMenuItemAsync(int id)
+        public async Task<bool> DeleteMenuItemAsync(string id)
         {
-            var item = await _context.MenuItems.FirstOrDefaultAsync(m => m.Id == id);
-            if (item != null)
-            {
-                _context.MenuItems.Remove(item);
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            return false;
+            var filter = Builders<MenuItem>.Filter.Eq(m => m.Id, id);
+            var result = await _context.MenuItems.DeleteOneAsync(filter);
+            return result.DeletedCount > 0;
         }
 
-        public async Task<MenuItem> UpdateDisponibiliteAsync(int id, bool disponible)
+        public async Task<MenuItem> UpdateDisponibiliteAsync(string id, bool disponible)
         {
-            var item = await _context.MenuItems.FirstOrDefaultAsync(m => m.Id == id);
-            if (item != null)
-            {
-                item.Disponible = disponible;
-                await _context.SaveChangesAsync();
-                return item;
-            }
-            return null;
+            var filter = Builders<MenuItem>.Filter.Eq(m => m.Id, id);
+            var update = Builders<MenuItem>.Update.Set(m => m.Disponible, disponible);
+            
+            await _context.MenuItems.UpdateOneAsync(filter, update);
+            return await GetMenuItemByIdAsync(id);
         }
     }
 }

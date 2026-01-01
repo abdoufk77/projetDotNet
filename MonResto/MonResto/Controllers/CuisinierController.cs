@@ -13,62 +13,80 @@ namespace MonResto.Controllers
         private readonly IMenuService _menuService;
         private readonly ICommandeService _commandeService;
         private readonly IAuthService _authService;
+        private readonly ITableService _tableService;
 
-        public CuisinierController(IMenuService menuService, ICommandeService commandeService, IAuthService authService)
+        public CuisinierController(IMenuService menuService, ICommandeService commandeService, IAuthService authService, ITableService tableService)
         {
             _menuService = menuService;
             _commandeService = commandeService;
             _authService = authService;
+            _tableService = tableService;
         }
 
+        // ========== GESTION DES COMMANDES ==========
+
         [HttpGet("commandes")]
-        public async Task<IActionResult> GetAllCommandes()
+        public async Task<IActionResult> GetCommandes()
         {
             var commandes = await _commandeService.GetAllCommandesAsync();
-            return Ok(commandes);
+            var commandesDto = await EnrichCommandesWithTableNumber(commandes);
+            return Ok(commandesDto);
         }
 
         [HttpGet("commandes/en-attente")]
         public async Task<IActionResult> GetCommandesEnAttente()
         {
             var commandes = await _commandeService.GetAllCommandesAsync();
-                 
+
             var filtered = commandes.Where(c => c.Statut == CommandeStatut.EnAttente)
                 .OrderBy(c => c.DateCommande)
                 .ToList();
-            return Ok(filtered);
+            
+            var commandesDto = await EnrichCommandesWithTableNumber(filtered);
+            return Ok(commandesDto);
         }
 
         [HttpGet("commandes/en-preparation")]
         public async Task<IActionResult> GetCommandesEnPreparation()
         {
             var commandes = await _commandeService.GetAllCommandesAsync();
-                
+
             var filtered = commandes.Where(c => c.Statut == CommandeStatut.EnPreparation)
                 .OrderBy(c => c.DateCommande)
                 .ToList();
-            return Ok(filtered);
+            
+            var commandesDto = await EnrichCommandesWithTableNumber(filtered);
+            return Ok(commandesDto);
         }
 
         [HttpGet("commandes/{id}")]
-        public async Task<IActionResult> GetCommande(int id)
+        public async Task<IActionResult> GetCommande(string id)
         {
             var commande = await _commandeService.GetCommandeByIdAsync(id);
             if (commande == null)
             {
                 return NotFound(new { message = "Commande non trouvée" });
             }
-            return Ok(commande);
+
+            var table = await _tableService.GetTableByIdAsync(commande.TableId);
+            var commandeDto = new CommandeDto
+            {
+                Id = commande.Id,
+                TableId = commande.TableId,
+                NumeroTable = table?.NumeroTable ?? 0,
+                Items = commande.Items,
+                Total = commande.Total,
+                Statut = commande.Statut,
+                DateCommande = commande.DateCommande,
+                Notes = commande.Notes
+            };
+
+            return Ok(commandeDto);
         }
 
         [HttpPut("commandes/{id}/statut")]
-        public async Task<IActionResult> UpdateCommandeStatut(int id, [FromBody] UpdateStatutCommandeRq request)
+        public async Task<IActionResult> UpdateStatut(string id, [FromBody] UpdateStatutRequest request)
         {
-            if (string.IsNullOrEmpty(request.Statut))
-            {
-                return BadRequest(new { message = "Le statut est requis" });
-            }
-
             var commande = await _commandeService.GetCommandeByIdAsync(id);
             if (commande == null)
             {
@@ -96,7 +114,7 @@ namespace MonResto.Controllers
         }
 
         [HttpPut("commandes/{id}/demarrer")]
-        public async Task<IActionResult> DemarrerPreparation(int id)
+        public async Task<IActionResult> DemarrerPreparation(string id)
         {
             var commande = await _commandeService.GetCommandeByIdAsync(id);
             if (commande == null)
@@ -114,7 +132,7 @@ namespace MonResto.Controllers
         }
 
         [HttpPut("commandes/{id}/terminer")]
-        public async Task<IActionResult> TerminerPreparation(int id)
+        public async Task<IActionResult> TerminerPreparation(string id)
         {
             var commande = await _commandeService.GetCommandeByIdAsync(id);
             if (commande == null)
@@ -158,7 +176,7 @@ namespace MonResto.Controllers
         }
 
         [HttpGet("menu/{id}")]
-        public async Task<IActionResult> GetMenuItem(int id)
+        public async Task<IActionResult> GetMenuItem(string id)
         {
             var item = await _menuService.GetMenuItemByIdAsync(id);
             if (item == null)
@@ -203,7 +221,7 @@ namespace MonResto.Controllers
         }
 
         [HttpPut("menu/{id}")]
-        public async Task<IActionResult> UpdateMenuItem(int id, [FromBody] MenuItem item)
+        public async Task<IActionResult> UpdateMenuItem(string id, [FromBody] MenuItem item)
         {
             if (!ModelState.IsValid)
             {
@@ -241,7 +259,7 @@ namespace MonResto.Controllers
         }
 
         [HttpDelete("menu/{id}")]
-        public async Task<IActionResult> DeleteMenuItem(int id)
+        public async Task<IActionResult> DeleteMenuItem(string id)
         {
             var item = await _menuService.GetMenuItemByIdAsync(id);
             if (item == null)
@@ -259,7 +277,7 @@ namespace MonResto.Controllers
         }
 
         [HttpPatch("menu/{id}/disponibilite")]
-        public async Task<IActionResult> UpdateDisponibilite(int id, [FromBody] DisponibiliteRequest request)
+        public async Task<IActionResult> UpdateDisponibilite(string id, [FromBody] DisponibiliteRequest request)
         {
             var item = await _menuService.GetMenuItemByIdAsync(id);
             if (item == null)
@@ -304,6 +322,31 @@ namespace MonResto.Controllers
                 desserts = menuItems.Count(m => m.Categorie == MenuCategorie.Dessert),
                 boissons = menuItems.Count(m => m.Categorie == MenuCategorie.Boisson)
             });
+        }
+
+        // ========== HELPER METHODS ==========
+
+        private async Task<List<CommandeDto>> EnrichCommandesWithTableNumber(List<Commande> commandes)
+        {
+            var commandesDto = new List<CommandeDto>();
+            
+            foreach (var commande in commandes)
+            {
+                var table = await _tableService.GetTableByIdAsync(commande.TableId);
+                commandesDto.Add(new CommandeDto
+                {
+                    Id = commande.Id,
+                    TableId = commande.TableId,
+                    NumeroTable = table?.NumeroTable ?? 0,
+                    Items = commande.Items,
+                    Total = commande.Total,
+                    Statut = commande.Statut,
+                    DateCommande = commande.DateCommande,
+                    Notes = commande.Notes
+                });
+            }
+
+            return commandesDto;
         }
     }
 

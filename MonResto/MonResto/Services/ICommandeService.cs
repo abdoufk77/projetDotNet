@@ -6,8 +6,8 @@ namespace MonResto.Services
     {
         Task<Commande> CreateCommandeAsync(CreateCommandeRequest request);
         Task<List<Commande>> GetAllCommandesAsync();
-        Task<List<Commande>> GetCommandesByTableAsync(int tableId);
-        Task<Commande> GetCommandeByIdAsync(int id);
-        Task<Commande> UpdateStatutAsync(int id, string statut);
+        Task<List<Commande>> GetCommandesByTableAsync(string tableId);
+        Task<Commande> GetCommandeByIdAsync(string id);
+        Task<Commande> UpdateStatutAsync(string id, string statut);
     }
 }

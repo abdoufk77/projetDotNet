@@ -1,4 +1,4 @@
-ï»¿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MonResto.Models;
 using MonResto.Services;
@@ -29,12 +29,12 @@ namespace MonResto.Controllers
         }
 
         [HttpGet("tables/{id}")]
-        public async Task<IActionResult> GetTable(int id)
+        public async Task<IActionResult> GetTable(string id)
         {
             var table = await _tableService.GetTableByIdAsync(id);
             if (table == null)
             {
-                return NotFound(new { message = "Table non trouvÃ©e" });
+                return NotFound(new { message = "Table non trouvée" });
             }
             return Ok(table);
         }
@@ -47,57 +47,57 @@ namespace MonResto.Controllers
         }
 
         [HttpPut("tables/{id}")]
-        public async Task<IActionResult> UpdateTable(int id, [FromBody] Table table)
+        public async Task<IActionResult> UpdateTable(string id, [FromBody] Table table)
         {
             table.Id = id;
             var updatedTable = await _tableService.UpdateTableAsync(table);
             if (updatedTable == null)
             {
-                return NotFound(new { message = "Table non trouvÃ©e" });
+                return NotFound(new { message = "Table non trouvée" });
             }
             return Ok(updatedTable);
         }
 
         [HttpDelete("tables/{id}")]
-        public async Task<IActionResult> DeleteTable(int id)
+        public async Task<IActionResult> DeleteTable(string id)
         {
             var deleted = await _tableService.DeleteTableAsync(id);
             if (deleted)
             {
-                return Ok(new { message = "Table supprimÃ©e avec succÃ¨s" });
+                return Ok(new { message = "Table supprimée avec succès" });
             }
-            return NotFound(new { message = "Table non trouvÃ©e" });
+            return NotFound(new { message = "Table non trouvée" });
         }
 
         [HttpPut("tables/{id}/statut")]
-        public async Task<IActionResult> UpdateStatut(int id, [FromBody] UpdateStatutRequest request)
+        public async Task<IActionResult> UpdateStatut(string id, [FromBody] UpdateStatutRequest request)
         {
             var table = await _tableService.UpdateStatutAsync(id, request.Statut);
             if (table == null)
             {
-                return NotFound(new { message = "Table non trouvÃ©e" });
+                return NotFound(new { message = "Table non trouvée" });
             }
             return Ok(table);
         }
 
         [HttpGet("tables/{id}/qrcode")]
-        public async Task<IActionResult> GetQrCode(int id)
+        public async Task<IActionResult> GetQrCode(string id)
         {
             var qrCodeImage = await _tableService.GenerateQrCodeImageAsync(id);
             if (qrCodeImage == null)
             {
-                return NotFound(new { message = "Table non trouvÃ©e" });
+                return NotFound(new { message = "Table non trouvée" });
             }
             return File(qrCodeImage, "image/png");
         }
 
         [HttpGet("tables/{id}/qrcode-url")]
-        public async Task<IActionResult> GetQrCodeUrl(int id)
+        public async Task<IActionResult> GetQrCodeUrl(string id)
         {
             var url = await _tableService.GenerateQrCodeUrlAsync(id);
             if (url == null)
             {
-                return NotFound(new { message = "Table non trouvÃ©e" });
+                return NotFound(new { message = "Table non trouvée" });
             }
             return Ok(new { url = url });
         }
@@ -112,23 +112,23 @@ namespace MonResto.Controllers
         }
 
         [HttpGet("commandes/{id}")]
-        public async Task<IActionResult> GetCommande(int id)
+        public async Task<IActionResult> GetCommande(string id)
         {
             var commande = await _commandeService.GetCommandeByIdAsync(id);
             if (commande == null)
             {
-                return NotFound(new { message = "Commande non trouvÃ©e" });
+                return NotFound(new { message = "Commande non trouvée" });
             }
             return Ok(commande);
         }
 
         [HttpPut("commandes/{id}/statut")]
-        public async Task<IActionResult> UpdateCommandeStatut(int id, [FromBody] UpdateStatutCommandeRq request)
+        public async Task<IActionResult> UpdateCommandeStatut(string id, [FromBody] UpdateStatutCommandeRq request)
         {
             var commande = await _commandeService.UpdateStatutAsync(id, request.Statut);
             if (commande == null)
             {
-                return NotFound(new { message = "Commande non trouvÃ©e" });
+                return NotFound(new { message = "Commande non trouvée" });
             }
             return Ok(commande);
         }

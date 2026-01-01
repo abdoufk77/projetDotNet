@@ -1,81 +1,78 @@
 ﻿using MonResto.Models;
 using MonResto.Data;
 using QRCoder;
-using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 
 namespace MonResto.Services
 {
     public class TableService : ITableService
     {
-        private readonly AppDbContext _context;
+        private readonly MongoDbContext _context;
 
-        public TableService(AppDbContext context)
+        public TableService(MongoDbContext context)
         {
             _context = context;
         }
 
         public async Task<List<Table>> GetAllTablesAsync()
         {
-            return await _context.Tables.ToListAsync();
+            return await _context.Tables.Find(FilterDefinition<Table>.Empty).ToListAsync();
         }
 
-        public async Task<Table> GetTableByIdAsync(int id)
+        public async Task<Table> GetTableByIdAsync(string id)
         {
-            return await _context.Tables.FirstOrDefaultAsync(t => t.Id == id);
+            var filter = Builders<Table>.Filter.Eq(t => t.Id, id);
+            return await _context.Tables.Find(filter).FirstOrDefaultAsync();
         }
 
         public async Task<Table> GetTableByQrCodeAsync(string qrCodeUrl)
         {
-            return await _context.Tables.FirstOrDefaultAsync(t => t.QrCodeUrl == qrCodeUrl);
+            var filter = Builders<Table>.Filter.Eq(t => t.QrCodeUrl, qrCodeUrl);
+            return await _context.Tables.Find(filter).FirstOrDefaultAsync();
         }
 
         public async Task<Table> CreateTableAsync(Table table)
         {
             table.QrCodeUrl = $"table-{table.NumeroTable}"; 
             table.Statut = TableStatut.Libre;
-            _context.Tables.Add(table);
-            await _context.SaveChangesAsync();
+            await _context.Tables.InsertOneAsync(table);
             return table;
         }
 
         public async Task<Table> UpdateTableAsync(Table table)
         {
-            var existingTable = await _context.Tables.FirstOrDefaultAsync(t => t.Id == table.Id);
+            var filter = Builders<Table>.Filter.Eq(t => t.Id, table.Id);
+            var existingTable = await _context.Tables.Find(filter).FirstOrDefaultAsync();
+            
             if (existingTable != null)
             {
-                existingTable.NumeroTable = table.NumeroTable;
-                existingTable.Statut = table.Statut;
-                await _context.SaveChangesAsync();
-                return existingTable;
+                var update = Builders<Table>.Update
+                    .Set(t => t.NumeroTable, table.NumeroTable)
+                    .Set(t => t.Statut, table.Statut);
+                
+                await _context.Tables.UpdateOneAsync(filter, update);
+                return await GetTableByIdAsync(table.Id);
             }
             return null;
         }
 
-        public async Task<bool> DeleteTableAsync(int id)
+        public async Task<bool> DeleteTableAsync(string id)
         {
-            var table = await _context.Tables.FirstOrDefaultAsync(t => t.Id == id);
-            if (table != null)
-            {
-                _context.Tables.Remove(table);
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            return false;
+            var filter = Builders<Table>.Filter.Eq(t => t.Id, id);
+            var result = await _context.Tables.DeleteOneAsync(filter);
+            return result.DeletedCount > 0;
         }
 
-        public async Task<Table> UpdateStatutAsync(int id, string statut)
+        public async Task<Table> UpdateStatutAsync(string id, string statut)
         {
-            var table = await _context.Tables.FirstOrDefaultAsync(t => t.Id == id);
-            if (table != null)
-            {
-                table.Statut = statut;
-                await _context.SaveChangesAsync();
-                return table;
-            }
-            return null;
+            var filter = Builders<Table>.Filter.Eq(t => t.Id, id);
+            var update = Builders<Table>.Update.Set(t => t.Statut, statut);
+            
+            await _context.Tables.UpdateOneAsync(filter, update);
+            return await GetTableByIdAsync(id);
         }
 
-        public async Task<string> GenerateQrCodeUrlAsync(int tableId)
+        public async Task<string> GenerateQrCodeUrlAsync(string tableId)
         {
             var table = await GetTableByIdAsync(tableId);
             if (table != null)
@@ -85,7 +82,7 @@ namespace MonResto.Services
             return null;
         }
 
-        public async Task<byte[]> GenerateQrCodeImageAsync(int tableId)
+        public async Task<byte[]> GenerateQrCodeImageAsync(string tableId)
         {
             var url = await GenerateQrCodeUrlAsync(tableId);
             if (url == null)

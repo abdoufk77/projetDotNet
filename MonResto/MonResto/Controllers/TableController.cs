@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using MonResto.Services;
 
 namespace MonResto.Controllers
@@ -20,13 +20,13 @@ namespace MonResto.Controllers
             var table = await _tableService.GetTableByQrCodeAsync(qrCodeUrl);
             if (table == null)
             {
-                return NotFound(new { message = "Table non trouvée" });
+                return NotFound(new { message = "Table non trouv�e" });
             }
             return Ok(table);
         }
 
         [HttpGet("{id}/qrcode-url")]
-        public async Task<IActionResult> GetQrCodeUrl(int id)
+        public async Task<IActionResult> GetQrCodeUrl(string id)
         {
             var url = await _tableService.GenerateQrCodeUrlAsync(id);
             if (url == null)

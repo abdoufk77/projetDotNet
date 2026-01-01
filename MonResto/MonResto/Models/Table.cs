@@ -1,8 +1,14 @@
-﻿namespace MonResto.Models
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+
+namespace MonResto.Models
 {
     public class Table
     {
-        public int Id { get; set; }
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? Id { get; set; }
+        
         public int NumeroTable { get; set; }
         //public int Capacite { get; set; } supprimer ce champe
         public string Statut { get; set; } // Libre, Occupée, Réservée

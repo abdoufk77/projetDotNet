@@ -1,10 +1,16 @@
-﻿namespace MonResto.Models
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+
+namespace MonResto.Models
 {
     public class CommandeItem
     {
-        public int Id { get; set; }
-        public int CommandeId { get; set; }
-        public int MenuItemId { get; set; }
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? Id { get; set; }
+        
+        public string CommandeId { get; set; }
+        public string MenuItemId { get; set; }
         public string Nom { get; set; }
         public int Quantite { get; set; }
         public decimal PrixUnitaire { get; set; }

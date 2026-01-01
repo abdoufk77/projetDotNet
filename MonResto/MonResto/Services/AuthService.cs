@@ -4,16 +4,16 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using MonResto.Data;
-using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 
 namespace MonResto.Services
 {
     public class AuthService : IAuthService
     {
         private readonly IConfiguration _configuration;
-        private readonly AppDbContext _context;
+        private readonly MongoDbContext _context;
 
-        public AuthService(IConfiguration configuration, AppDbContext context)
+        public AuthService(IConfiguration configuration, MongoDbContext context)
         {
             _configuration = configuration;
             _context = context;
@@ -21,8 +21,11 @@ namespace MonResto.Services
 
         public async Task<LoginResponse> AuthenticateAsync(LoginRequest request)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u =>
-                u.Username == request.Username && u.Password == request.Password);
+            var filter = Builders<User>.Filter.And(
+                Builders<User>.Filter.Eq(u => u.Username, request.Username),
+                Builders<User>.Filter.Eq(u => u.Password, request.Password)
+            );
+            var user = await _context.Users.Find(filter).FirstOrDefaultAsync();
 
             if (user == null)
                 return null;
@@ -40,60 +43,60 @@ namespace MonResto.Services
 
         public async Task<User> GetUserByUsernameAsync(string username)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            var filter = Builders<User>.Filter.Eq(u => u.Username, username);
+            return await _context.Users.Find(filter).FirstOrDefaultAsync();
         }
 
-        public async Task<User> GetUserByIdAsync(int id)
+        public async Task<User> GetUserByIdAsync(string id)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            var filter = Builders<User>.Filter.Eq(u => u.Id, id);
+            return await _context.Users.Find(filter).FirstOrDefaultAsync();
         }
 
         public async Task<List<User>> GetUsersByRoleAsync(string role)
         {
-            return await _context.Users.Where(u => u.Role == role).ToListAsync();
+            var filter = Builders<User>.Filter.Eq(u => u.Role, role);
+            return await _context.Users.Find(filter).ToListAsync();
         }
 
         public async Task<List<User>> GetAllUsersAsync()
         {
-            return await _context.Users.ToListAsync();
+            return await _context.Users.Find(FilterDefinition<User>.Empty).ToListAsync();
         }
 
         public async Task<User> CreateUserAsync(User user)
         {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            await _context.Users.InsertOneAsync(user);
             return user;
         }
 
         public async Task<User> UpdateUserAsync(User user)
         {
-            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == user.Id);
+            var filter = Builders<User>.Filter.Eq(u => u.Id, user.Id);
+            var existingUser = await _context.Users.Find(filter).FirstOrDefaultAsync();
+            
             if (existingUser != null)
             {
-                existingUser.Username = user.Username;
-                existingUser.FullName = user.FullName;
+                var update = Builders<User>.Update
+                    .Set(u => u.Username, user.Username)
+                    .Set(u => u.FullName, user.FullName);
 
                 if (!string.IsNullOrEmpty(user.Password))
                 {
-                    existingUser.Password = user.Password;
+                    update = update.Set(u => u.Password, user.Password);
                 }
-                
-                await _context.SaveChangesAsync();
-                return existingUser;
+
+                await _context.Users.UpdateOneAsync(filter, update);
+                return await GetUserByIdAsync(user.Id);
             }
             return null;
         }
 
-        public async Task<bool> DeleteUserAsync(int id)
+        public async Task<bool> DeleteUserAsync(string id)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
-            if (user != null)
-            {
-                _context.Users.Remove(user);
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            return false;
+            var filter = Builders<User>.Filter.Eq(u => u.Id, id);
+            var result = await _context.Users.DeleteOneAsync(filter);
+            return result.DeletedCount > 0;
         }
 
         private string GenerateJwtToken(User user)

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using MonResto.Services;
 
 namespace MonResto.Controllers
@@ -31,7 +31,7 @@ namespace MonResto.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetMenuItem(int id)
+        public async Task<IActionResult> GetMenuItem(string id)
         {
             var item = await _menuService.GetMenuItemByIdAsync(id);
             if (item == null)

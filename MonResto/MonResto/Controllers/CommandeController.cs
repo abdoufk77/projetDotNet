@@ -1,4 +1,4 @@
-ï»¿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MonResto.Models;
 using MonResto.Services;
@@ -26,13 +26,13 @@ namespace MonResto.Controllers
                 var table = await _tableService.GetTableByIdAsync(request.TableId);
                 if (table == null)
                 {
-                    return NotFound(new { message = "Table non trouvÃ©e" });
+                    return NotFound(new { message = "Table non trouvée" });
                 }
 
                 var commande = await _commandeService.CreateCommandeAsync(request);
                 return Ok(new
                 {
-                    message = "Commande crÃ©Ã©e avec succÃ¨s",
+                    message = "Commande créée avec succès",
                     commandeId = commande.Id,
                     total = commande.Total
                 });
@@ -43,7 +43,7 @@ namespace MonResto.Controllers
             }
         }
 
-        // Endpoints protÃ©gÃ©s pour le personnel
+        // Endpoints protégés pour le personnel
         [HttpGet]
         [Authorize(Roles = $"{UserRole.Admin},{UserRole.Serveur},{UserRole.Cuisinier}")]
         public async Task<IActionResult> GetAllCommandes()
@@ -54,7 +54,7 @@ namespace MonResto.Controllers
 
         [HttpGet("table/{tableId}")]
         [Authorize(Roles = $"{UserRole.Admin},{UserRole.Serveur},{UserRole.Cuisinier}")]
-        public async Task<IActionResult> GetCommandesByTable(int tableId)
+        public async Task<IActionResult> GetCommandesByTable(string tableId)
         {
             var commandes = await _commandeService.GetCommandesByTableAsync(tableId);
             return Ok(commandes);
@@ -62,7 +62,7 @@ namespace MonResto.Controllers
 
         [HttpGet("{id}")]
         [Authorize(Roles = $"{UserRole.Admin},{UserRole.Serveur},{UserRole.Cuisinier}")]
-        public async Task<IActionResult> GetCommande(int id)
+        public async Task<IActionResult> GetCommande(string id)
         {
             var commande = await _commandeService.GetCommandeByIdAsync(id);
             if (commande == null)
@@ -74,7 +74,7 @@ namespace MonResto.Controllers
 
         [HttpPut("{id}/statut")]
         [Authorize(Roles = $"{UserRole.Cuisinier},{UserRole.Serveur}")]
-        public async Task<IActionResult> UpdateStatut(int id, [FromBody] UpdateStatutCommandeRequest request)
+        public async Task<IActionResult> UpdateStatut(string id, [FromBody] UpdateStatutCommandeRequest request)
         {
             if (string.IsNullOrEmpty(request.Statut))
             {
@@ -84,7 +84,7 @@ namespace MonResto.Controllers
             var commande = await _commandeService.UpdateStatutAsync(id, request.Statut);
             if (commande == null)
             {
-                return NotFound(new { message = "Commande non trouvÃ©e" });
+                return NotFound(new { message = "Commande non trouvée" });
             }
             return Ok(commande);
         }
