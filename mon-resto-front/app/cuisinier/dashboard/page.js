@@ -136,6 +136,11 @@ export default function CuisinierDashboard() {
         return;
       }
 
+      if (!menuFormData.nom || !menuFormData.prix || !menuFormData.categorie) {
+        setMessage("Veuillez remplir tous les champs obligatoires");
+        return;
+      }
+
       const url = editingItem
         ? `${API_URL}/Cuisinier/menu/${editingItem.id}`
         : `${API_URL}/Cuisinier/menu`;
@@ -148,7 +153,7 @@ export default function CuisinierDashboard() {
         },
         body: JSON.stringify({
           ...menuFormData,
-          id: editingItem?.id || 0,
+          ...(editingItem && { id: editingItem.id }),
           prix: parseFloat(menuFormData.prix),
         }),
       });
