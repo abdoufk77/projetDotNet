@@ -1,49 +1,107 @@
-Projet ASP.NET Core - Restauration 
- Présentation du Projet
-Ce projet a été réalisé dans le cadre de l'examen de Développement .NET. Il s'agit d'une application web robuste basée sur le pattern MVC (Model-View-Controller), mettant l'accent sur la séparation des préoccupations et la maintenabilité du code.
+# 🍽️ MonResto - Système de Gestion de Restaurant
 
- Architecture Technique
-L'application repose sur les technologies suivantes :
+MonResto est une application web complète pour la gestion d'un restaurant, facilitant la coordination entre les serveurs, les cuisiniers et l'administration. Elle permet une gestion fluide des commandes, des tables et du menu en temps réel.
 
-Framework : .NET Core 8.0 (ou la version que tu utilises)
+## 🚀 Fonctionnalités Principales
 
-ORM : Entity Framework Core (si utilisé pour la BDD)
+L'application est divisée en trois espaces sécurisés par rôle :
 
- Fonctionnalités Clés
-Gestion des Modèles : Implémentation de classes métiers avec validation de données via Data Annotations.
+### 👨‍💼 Espace Admin
+- **Gestion des Utilisateurs** : Création et modification des comptes (Cuisiniers, Serveurs).
+- **Supervision** : Vue d'ensemble de l'activité du restaurant.
+- **Gestion des Tables** : Configuration du plan de salle.
 
-Contrôleurs : Logique métier centralisée gérant les requêtes HTTP et la navigation.
+### 👨‍🍳 Espace Cuisinier
+- **Gestion du Menu** : Ajout, modification, et suppression de plats. Gestion de la disponibilité .
+- **Suivi des Commandes** : Réception des commandes en temps réel.
+- **Workflow de Cuisine** : Changement de statut des commandes (En attente -> En préparation -> Prête).
 
- Installation et Exécution
-Pour lancer le projet en local, suivez ces étapes :
+### 🤵 Espace Serveur
+- **Prise de Commande** : Interface intuitive pour créer des commandes par table.
+- **Suivi** : Notification des plats prêts à être servis.
+- **Gestion des Tables** : Changement de statut (Libre, Occupée) et génération de QR Codes.
 
-Cloner le dépôt :
+## 🛠️ Stack Technique
 
-Bash
+### Backend (API)
+- **Framework** : .NET 8 (ASP.NET Core Web API)
+- **Base de Données** : MongoDB
+- **Authentification** : JWT (JSON Web Tokens)
+- **Architecture** : Services / Controllers pattern
 
-git clone https://github.com/abdoufk77/projetDotNet.git
-Restaurer les dépendances :
+### Frontend (Client)
+- **Framework** : Next.js 14 (App Router)
+- **Langage** : JavaScript / React
+- **Styling** : Tailwind CSS
+- **Icônes** : Lucide React
 
-Bash
+## ⚙️ Prérequis
 
-dotnet restore
-Mettre à jour la base de données (si applicable) :
+- **.NET SDK 8.0** ou supérieur
+- **Node.js 18+** et **npm**
+- **MongoDB** (Local ou Atlas)
 
-Bash
+## 📦 Installation et Démarrage
 
-dotnet ef database update
-Lancer l'application :
+### 1. Configuration du Backend
 
-Bash
+1. Naviguez dans le dossier du backend :
+   ```bash
+   cd MonResto/MonResto
+   ```
 
-dotnet run
-L'application sera accessible sur https://localhost:5001 ou http://localhost:5000.
+2. Configurez la connexion MongoDB dans `appsettings.json` (si nécessaire) :
+   ```json
+   "MongoDbString": "mongodb://localhost:27017",
+   "DatabaseName": "MonRestoDB"
+   ```
 
- Structure du Répertoire
-/Controllers : Logique de contrôle des flux.
+3. Lancez le serveur :
+   ```bash
+   dotnet run
+   ```
+   L'API sera accessible sur `http://localhost:5230`.
 
-/Models : Définition des entités et de la logique de données.
+### 2. Configuration du Frontend
 
-/Views : Interfaces utilisateur structurées par entité.
+1. Naviguez dans le dossier du frontend :
+   ```bash
+   cd mon-resto-front
+   ```
 
-/wwwroot : Ressources statiques (CSS, JS, Images).
+2. Installez les dépendances :
+   ```bash
+   npm install
+   ```
+
+3. Lancez le serveur de développement :
+   ```bash
+   npm run dev
+   ```
+   L'application sera accessible sur `http://localhost:3000`.
+
+## 📁 Structure du Projet
+
+```
+projetDotNet/
+├── MonResto/               # Backend ASP.NET Core
+│   ├── Controllers/        # Points d'entrée API
+│   ├── Models/             # Modèles de données (MongoDB)
+│   ├── Services/           # Logique métier
+│   └── ...
+│
+└── mon-resto-front/        # Frontend Next.js
+    ├── app/                # Pages et Routing (App Router)
+    │   ├── admin/          # Dashboard Admin
+    │   ├── cuisinier/      # Dashboard Cuisinier
+    │   └── serveur/        # Dashboard Serveur
+    ├── components/         # Composants Réutilisables
+    └── ...
+```
+
+## 🔒 Comptes de Test (Par défaut)
+
+L'application peut être initialisée avec des comptes par défaut (voir `MongoDbSeeder.cs` si implémenté) ou vous pouvez créer un admin manuellement via l'API.
+
+---
+*Projet réalisé dans le cadre de l'examen de Développement .NET.*
