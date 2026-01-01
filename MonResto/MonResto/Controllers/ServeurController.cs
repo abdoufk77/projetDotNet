@@ -5,9 +5,9 @@ using MonResto.Services;
 
 namespace MonResto.Controllers
 {
+    [Authorize(Roles = "Serveur,Admin")]
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = UserRole.Serveur)]
     public class ServeurController : ControllerBase
     {
         private readonly ITableService _tableService;
@@ -34,7 +34,7 @@ namespace MonResto.Controllers
             var table = await _tableService.GetTableByIdAsync(id);
             if (table == null)
             {
-                return NotFound(new { message = "Table non trouvée" });
+                return NotFound(new { message = "Table non trouvÃ©e" });
             }
             return Ok(table);
         }
@@ -49,57 +49,40 @@ namespace MonResto.Controllers
         [HttpPut("tables/{id}")]
         public async Task<IActionResult> UpdateTable(string id, [FromBody] Table table)
         {
-            table.Id = id;
-            var updatedTable = await _tableService.UpdateTableAsync(table);
-            if (updatedTable == null)
-            {
-                return NotFound(new { message = "Table non trouvée" });
-            }
-            return Ok(updatedTable);
+            if (id != table.Id) return BadRequest(new { message = "ID mismatch" });
+            var updated = await _tableService.UpdateTableAsync(table);
+            if (updated == null) return NotFound();
+            return Ok(updated);
         }
 
         [HttpDelete("tables/{id}")]
         public async Task<IActionResult> DeleteTable(string id)
         {
-            var deleted = await _tableService.DeleteTableAsync(id);
-            if (deleted)
-            {
-                return Ok(new { message = "Table supprimée avec succès" });
-            }
-            return NotFound(new { message = "Table non trouvée" });
+            var result = await _tableService.DeleteTableAsync(id);
+            if (!result) return NotFound();
+            return Ok(new { message = "Table supprimÃ©e" });
         }
 
         [HttpPut("tables/{id}/statut")]
-        public async Task<IActionResult> UpdateStatut(string id, [FromBody] UpdateStatutRequest request)
+        public async Task<IActionResult> UpdateTableStatut(string id, [FromBody] UpdateStatutRequest request)
         {
-            var table = await _tableService.UpdateStatutAsync(id, request.Statut);
-            if (table == null)
-            {
-                return NotFound(new { message = "Table non trouvée" });
-            }
-            return Ok(table);
+            var updated = await _tableService.UpdateStatutAsync(id, request.Statut);
+            if (updated == null) return NotFound();
+            return Ok(updated);
         }
 
         [HttpGet("tables/{id}/qrcode")]
         public async Task<IActionResult> GetQrCode(string id)
         {
-            var qrCodeImage = await _tableService.GenerateQrCodeImageAsync(id);
-            if (qrCodeImage == null)
-            {
-                return NotFound(new { message = "Table non trouvée" });
-            }
-            return File(qrCodeImage, "image/png");
+           var qrBytes = await _tableService.GenerateQrCodeImageAsync(id);
+           return File(qrBytes, "image/png");
         }
 
         [HttpGet("tables/{id}/qrcode-url")]
         public async Task<IActionResult> GetQrCodeUrl(string id)
         {
             var url = await _tableService.GenerateQrCodeUrlAsync(id);
-            if (url == null)
-            {
-                return NotFound(new { message = "Table non trouvée" });
-            }
-            return Ok(new { url = url });
+            return Ok(new { url });
         }
 
         // ===== GESTION DES COMMANDES =====
@@ -108,7 +91,8 @@ namespace MonResto.Controllers
         public async Task<IActionResult> GetAllCommandes()
         {
             var commandes = await _commandeService.GetAllCommandesAsync();
-            return Ok(commandes);
+            var commandesDto = await EnrichCommandesWithTableNumber(commandes);
+            return Ok(commandesDto);
         }
 
         [HttpGet("commandes/{id}")]
@@ -117,20 +101,54 @@ namespace MonResto.Controllers
             var commande = await _commandeService.GetCommandeByIdAsync(id);
             if (commande == null)
             {
-                return NotFound(new { message = "Commande non trouvée" });
+                return NotFound(new { message = "Commande non trouvÃ©e" });
             }
-            return Ok(commande);
+            
+             var table = await _tableService.GetTableByIdAsync(commande.TableId);
+             var dto = new CommandeDto {
+                 Id = commande.Id,
+                 TableId = commande.TableId,
+                 NumeroTable = table?.NumeroTable ?? 0,
+                 Items = commande.Items,
+                 Total = commande.Total,
+                 Statut = commande.Statut,
+                 DateCommande = commande.DateCommande,
+                 Notes = commande.Notes
+             };
+            return Ok(dto);
         }
 
         [HttpPut("commandes/{id}/statut")]
-        public async Task<IActionResult> UpdateCommandeStatut(string id, [FromBody] UpdateStatutCommandeRq request)
+        public async Task<IActionResult> UpdateCommandeStatut(string id, [FromBody] UpdateStatutRequest request)
         {
             var commande = await _commandeService.UpdateStatutAsync(id, request.Statut);
             if (commande == null)
             {
-                return NotFound(new { message = "Commande non trouvée" });
+                return NotFound(new { message = "Commande non trouvÃ©e" });
             }
             return Ok(commande);
+        }
+
+        // ===== HELPER METHODS =====
+        private async Task<List<CommandeDto>> EnrichCommandesWithTableNumber(List<Commande> commandes)
+        {
+            var commandesDto = new List<CommandeDto>();
+            foreach (var commande in commandes)
+            {
+                var table = await _tableService.GetTableByIdAsync(commande.TableId);
+                commandesDto.Add(new CommandeDto
+                {
+                    Id = commande.Id,
+                    TableId = commande.TableId,
+                    NumeroTable = table?.NumeroTable ?? 0,
+                    Items = commande.Items,
+                    Total = commande.Total,
+                    Statut = commande.Statut,
+                    DateCommande = commande.DateCommande,
+                    Notes = commande.Notes
+                });
+            }
+            return commandesDto;
         }
     }
 
@@ -138,5 +156,4 @@ namespace MonResto.Controllers
     {
         public string Statut { get; set; } = string.Empty;
     }
-
 }

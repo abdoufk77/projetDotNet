@@ -384,8 +384,8 @@ export default function ServeurDashboard() {
             <button
               onClick={() => setActiveTab("tables")}
               className={`flex-1 px-6 py-4 font-semibold transition-colors ${activeTab === "tables"
-                  ? "text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-600 hover:text-gray-800"
+                ? "text-blue-600 border-b-2 border-blue-600"
+                : "text-gray-600 hover:text-gray-800"
                 }`}
             >
               🪑 Gestion des Tables ({tables.length})
@@ -393,8 +393,8 @@ export default function ServeurDashboard() {
             <button
               onClick={() => setActiveTab("commandes")}
               className={`flex-1 px-6 py-4 font-semibold transition-colors relative ${activeTab === "commandes"
-                  ? "text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-600 hover:text-gray-800"
+                ? "text-blue-600 border-b-2 border-blue-600"
+                : "text-gray-600 hover:text-gray-800"
                 }`}
             >
               📦 Commandes à servir
@@ -613,8 +613,8 @@ export default function ServeurDashboard() {
               <button
                 onClick={() => setSelectedCommandeFilter("all")}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedCommandeFilter === "all"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                   }`}
               >
                 Toutes les commandes actives
@@ -622,8 +622,8 @@ export default function ServeurDashboard() {
               <button
                 onClick={() => setSelectedCommandeFilter("pretes")}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedCommandeFilter === "pretes"
-                    ? "bg-green-600 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  ? "bg-green-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                   }`}
               >
                 Prêtes à servir ({commandesStats.pretes})
@@ -666,7 +666,7 @@ export default function ServeurDashboard() {
                             </span>
                           </div>
                           <p className="text-sm text-gray-600">
-                            Table {commande.tableId} •{" "}
+                            Table {commande.numeroTable} •{" "}
                             {new Date(commande.dateCommande).toLocaleTimeString(
                               "fr-FR",
                               { hour: "2-digit", minute: "2-digit" }
